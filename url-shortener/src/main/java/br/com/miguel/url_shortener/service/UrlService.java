@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 public class UrlService {
@@ -20,7 +19,7 @@ public class UrlService {
     public Url createShortUrl(UrlRequestDTO data, Long expiresInDays){
         validateUrl(data);
 
-        String shortCode = generateCode();
+        String shortCode = generateShortUrl();
 
         if(expiresInDays == null){
             expiresInDays = 5L;
@@ -41,7 +40,7 @@ public class UrlService {
 
         return urls.stream()
                 .map(url -> new UrlStatsResponseDTO(
-                        "https://short.local/" + url.getShortCode(),
+                        "https://xxx.com/" + url.getShortCode(),
                         url.getOriginalUrl(),
                         url.getAccessCount()
                 ))
@@ -65,19 +64,18 @@ public class UrlService {
         urlRepository.delete(url);
     }
 
-    private String generateCode(){
-        int numTries = 10;
-        while(numTries > 0) {
-            String shortCode = UUID.randomUUID().toString().replace("-", "").substring(0, 8);
+    private String generateShortUrl(){
+        int length = (int) (Math.random() * ((10 - 5) + 1) + 5);
 
-            if(!urlRepository.existsByShortCode(shortCode)){
-                return shortCode;
-            }
+        String alphaNumericString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" + "0123456789" + "abcdefghijklmnopqrstuvwxyz";
+        StringBuilder sb = new StringBuilder();
 
-            numTries--;
+        for(int i = 0; i < length; i++){
+            int index = (int)(alphaNumericString.length() * Math.random());
+            sb.append(alphaNumericString.charAt(index));
         }
 
-        throw new RuntimeException("Could not generate unique short code");
+        return sb.toString();
     }
 
     private void validateUrl(UrlRequestDTO data){
